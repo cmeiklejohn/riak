@@ -1,23 +1,35 @@
 #!/bin/sh
 
-echo "Writing first value."
-curl -XPOST localhost:8098/types/default/buckets/users/keys/john_smith \
-    -H 'x-riak-index-twitter_bin: jsmith123' \
-    -H 'x-riak-index-email_bin: jsmith@basho.com' \
-    -H 'Content-Type: application/json' \
-    -d '{"userData":"data"}'
+# echo "Rebuilding source."
+# make
 
-echo "Writing second value."
-curl -XPOST localhost:8098/types/default/buckets/users/keys/jon_smith \
-    -H 'x-riak-index-twitter_bin: smith' \
-    -H 'x-riak-index-email_bin: jonsmith@basho.com' \
-    -H 'Content-Type: application/json' \
-    -d '{"userData":"data"}'
+# echo "Setting ulimit."
+# ulimit -n 4096
 
-echo "Running keylist."
-curl http://localhost:8098/buckets/welcome/keys?keys=lasp
+# echo "Starting riak."
+# rel/riak/bin/riak start
+
+# echo "Waiting for riak to start."
+# sleep 100
+
+echo "Writing records."
+for i in `seq 1 100`;
+do
+  echo "POST localhost:8098/types/default/buckets/users/keys/john_smith_${i}"
+  time curl -XPOST "localhost:8098/types/default/buckets/users/keys/john_smith_${i}" \
+      -H "x-riak-index-name_bin: john_smith" \
+      -H "Content-Type: application/json" \
+      -d '{"userData":"data"}'
+done
+
+echo "Executing keylist."
+time curl http://localhost:8098/buckets/welcome/keys?keys=lasp
 echo
 
-echo "Executing query."
-curl localhost:8098/buckets/users/index/twitter_bin/jsmith123?lasp=true
+echo "Executing 2i query."
+echo "GET localhost:8098/buckets/users/index/name_bin/john_smith?lasp=true"
+time curl localhost:8098/buckets/users/index/name_bin/john_smith?lasp=true
 echo
+
+# echo "Stopping riak."
+# rel/riak/bin/riak stop
