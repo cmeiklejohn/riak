@@ -7,3 +7,4 @@ ebin/
 apps/riak/.eunit
 apps/riak/.rebar
 .DS_Store
+_build/
